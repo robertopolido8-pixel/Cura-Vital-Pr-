@@ -1,10 +1,9 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-// Fix: Added missing ChevronRight import from lucide-react
-import { Send, Bot, Loader2, ArrowLeft, Search, Book, Sparkles, Crown, Magnet, Brain, ShieldCheck, X, ChevronRight } from 'lucide-react';
+import { Send, Loader2, ArrowLeft, Search, Book, Crown, Magnet, Brain, ChevronRight } from 'lucide-react';
 import { Message, ViewState, Disease } from '../types';
 import { getTherapeuticInsight } from '../services/geminiService';
-import { DISEASES, BIO_DICTIONARY } from '../constants';
+import { DISEASES } from '../constants';
 
 const VITALINO_ICON_GRADIENT = `data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjUxMiIgaGVpZ2h0PSI1MTIiIHJ4PSIxMjAiIGZpbGw9IiNGOEZBRkMiLz48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjUxMiIgeTI9IjUxMiIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPjxzdG9wIHN0b3AtY29sb3I9IiM0RjQ2RTUiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMxNEQ4QTEiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48dGV4dCB4PSI1MCUiIHk9IjUyJSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI5MDAiIGZvbnQtc2l6ZT0iMTYwIiBmaWxsPSJ1cmwoI2cpIj5DLlYuUC48L3RleHQ+PC9zdmc+`;
 
@@ -32,7 +31,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ initialQuery, onNavigate, isP
 
   useEffect(() => {
     if (initialQuery) handleSend(initialQuery);
-  }, []);
+  }, [initialQuery]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -57,13 +56,11 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ initialQuery, onNavigate, isP
   };
 
   const filteredDict = DISEASES.filter(d => 
-    d.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    d.description.toLowerCase().includes(searchTerm.toLowerCase())
+    d.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <div className="flex flex-col h-[calc(100vh-160px)] bg-[#F8FAFC] rounded-[2.5rem] shadow-xl border border-slate-100 overflow-hidden animate-fade-in relative">
-      {/* AI Header */}
       <div className="bg-slate-900 p-6 text-white flex items-center justify-between shadow-2xl z-10">
         <div className="flex items-center space-x-3">
           <button onClick={() => onNavigate('HOME')} className="p-2 hover:bg-white/20 rounded-2xl transition-colors">
@@ -88,7 +85,6 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ initialQuery, onNavigate, isP
         </button>
       </div>
 
-      {/* Dicionário Bioemocional Overlay */}
       {isDictOpen && (
         <div className="absolute inset-x-0 top-[84px] bottom-0 bg-white z-20 flex flex-col animate-fade-in">
           <div className="p-6 bg-slate-50 border-b border-slate-100">
@@ -115,11 +111,10 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ initialQuery, onNavigate, isP
                   <p className="text-xs text-indigo-700 font-medium italic">{selectedDisease.gnm.conflict}</p>
                 </div>
                 
-                {/* Conteúdo Exclusivo Pró no Dicionário */}
                 {!isPremium && selectedDisease.isPremium ? (
                   <div className="bg-amber-50 p-8 rounded-3xl text-center border border-amber-100 shadow-inner">
                     <Crown className="w-10 h-10 text-amber-600 mx-auto mb-3" />
-                    <p className="text-sm font-black text-amber-900 mb-4">Detalhes de Biomagnetismo e PNL estão bloqueados para este termo.</p>
+                    <p className="text-sm font-black text-amber-900 mb-4">Detalhes avançados bloqueados.</p>
                     <button onClick={() => onNavigate('PREMIUM')} className="bg-indigo-600 text-white px-6 py-3 rounded-xl text-xs font-black uppercase">Assinar Plano Mensal</button>
                   </div>
                 ) : (
@@ -127,28 +122,26 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ initialQuery, onNavigate, isP
                     <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
                       <div className="flex items-center mb-3 text-green-600">
                         <Magnet className="w-4 h-4 mr-2" />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Ressonância Magnética</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest">Biomagnetismo</span>
                       </div>
-                      <div className="space-y-2">
-                        {selectedDisease.biomagnetism.pairs.map((p, i) => (
-                          <p key={i} className="text-xs font-bold text-slate-700">
-                            <span className="bg-black text-white px-1 rounded">(-) {p.negative}</span> / 
-                            <span className="bg-red-600 text-white px-1 rounded ml-1">(+) {p.positive}</span>
-                          </p>
-                        ))}
-                      </div>
+                      {selectedDisease.biomagnetism.pairs.map((p, i) => (
+                        <p key={i} className="text-xs font-bold text-slate-700">
+                          <span className="bg-black text-white px-1 rounded">(-) {p.negative}</span> / 
+                          <span className="bg-red-600 text-white px-1 rounded ml-1">(+) {p.positive}</span>
+                        </p>
+                      ))}
                     </div>
                     <div className="bg-indigo-600 p-5 rounded-2xl text-white shadow-lg">
                       <div className="flex items-center mb-3 opacity-80">
                         <Brain className="w-4 h-4 mr-2" />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Ressignificação PNL</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest">Insight de Ressignificação</span>
                       </div>
                       <p className="text-xs font-medium italic leading-relaxed">"{selectedDisease.pnl.reframingTip}"</p>
                     </div>
                   </div>
                 )}
                 <button 
-                  onClick={() => handleSend(`Vitalino, aprofunde sobre o sentido biológico de ${selectedDisease.name}.`)}
+                  onClick={() => handleSend(`Vitalino, fale sobre o sentido biológico de ${selectedDisease.name}.`)}
                   className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest"
                 >
                   Pedir Análise Sistêmica
@@ -176,7 +169,6 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ initialQuery, onNavigate, isP
         </div>
       )}
 
-      {/* Messages Area */}
       <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-[#F8FAFC] no-scrollbar">
         {messages.map((msg) => (
           <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
@@ -188,47 +180,41 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ initialQuery, onNavigate, isP
                )}
                <div className={`p-5 rounded-[1.8rem] text-[13px] leading-relaxed shadow-sm ${
                   msg.role === 'user'
-                    ? 'bg-slate-900 text-white rounded-br-none shadow-slate-200'
+                    ? 'bg-slate-900 text-white rounded-br-none'
                     : 'bg-white border border-slate-100 text-slate-700 rounded-bl-none font-medium italic'
                 }`}>
-                <div className="whitespace-pre-wrap prose prose-sm max-w-none prose-slate text-inherit">
-                  {msg.text}
-                </div>
+                {msg.text}
               </div>
             </div>
           </div>
         ))}
         {isLoading && (
           <div className="flex justify-start items-end space-x-2">
-             <div className="w-8 h-8 bg-white rounded-xl shadow-md border border-slate-100 flex items-center justify-center p-0.5 animate-bounce overflow-hidden">
-                <img src={VITALINO_ICON_GRADIENT} alt="C.V.P." className="w-full h-full object-contain" />
-             </div>
              <div className="bg-white p-4 rounded-2xl rounded-bl-none shadow-sm border border-slate-100 flex items-center space-x-3">
                 <Loader2 className="w-4 h-4 animate-spin text-indigo-600" />
-                <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest italic">Acessando o Compêndio...</span>
+                <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest italic">Analisando Campo Morfogenético...</span>
              </div>
           </div>
         )}
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area */}
       {!isDictOpen && (
-        <div className="p-6 bg-white border-t border-slate-100 shadow-[0_-10px_30px_rgba(0,0,0,0.03)]">
+        <div className="p-6 bg-white border-t border-slate-100">
           <div className="flex items-center space-x-3">
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend(input)}
-              placeholder="Pergunte ao Vitalino..."
-              className="flex-1 p-4 bg-slate-50 border border-slate-100 rounded-[1.5rem] focus:outline-none focus:bg-white focus:ring-4 focus:ring-indigo-500/5 transition-all text-sm font-bold italic"
+              placeholder="Fale com o Vitalino..."
+              className="flex-1 p-4 bg-slate-50 border border-slate-100 rounded-[1.5rem] focus:outline-none focus:bg-white text-sm font-bold italic"
               disabled={isLoading}
             />
             <button
               onClick={() => handleSend(input)}
               disabled={isLoading || !input.trim()}
-              className="bg-slate-900 hover:bg-black disabled:bg-slate-200 text-white p-4 rounded-[1.2rem] transition-all shadow-xl active:scale-90 flex-shrink-0"
+              className="bg-slate-900 hover:bg-black text-white p-4 rounded-[1.2rem] transition-all shadow-xl active:scale-90"
             >
               <Send className="w-5 h-5" />
             </button>

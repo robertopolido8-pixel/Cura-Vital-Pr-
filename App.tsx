@@ -1,35 +1,26 @@
 
-import React, { useState, useMemo, useEffect } from 'react';
-import { Search, Crown, Lock, ChevronRight, Home, Book, Magnet, Brain, Sparkles, BrainCircuit, UserCheck, ShieldCheck, Star, ListOrdered, Heart, Info, PenTool, AlertCircle, MessageSquareShare, CreditCard, QrCode, FileText, User, Mail, Phone, CheckCircle2, Share2, Smartphone, MessageCircle, Link as LinkIcon, Copy, ExternalLink } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Search, Crown, ChevronRight, Home, Book, Magnet, Brain, Sparkles, BrainCircuit, ShieldCheck, Star, ListOrdered, CreditCard, QrCode, FileText, CheckCircle2, AlertTriangle, PartyPopper } from 'lucide-react';
 import { ViewState, Disease } from './types';
 import { DISEASES, NAV_ITEMS } from './constants';
 import AIAssistant from './components/AIAssistant';
 import DiseaseDetail from './components/DiseaseDetail';
 import BiomagIndex from './components/BiomagIndex';
 import TherapyTools from './components/TherapyTools';
+import ConstellationResearch from './components/ConstellationResearch';
 
 const App: React.FC = () => {
   const [view, setView] = useState<ViewState>('HOME');
   const [searchTerm, setSearchTerm] = useState('');
-  const [homeDictSearch, setHomeDictSearch] = useState('');
   const [selectedDisease, setSelectedDisease] = useState<Disease | null>(null);
   const [isPremium, setIsPremium] = useState(false);
+  const [showSuccessScreen, setShowSuccessScreen] = useState(false);
   const [aiContext, setAiContext] = useState<string | undefined>(undefined);
   
   const [paymentMethod, setPaymentMethod] = useState<'CARD' | 'PIX' | 'BOLETO'>('CARD');
-  const [checkoutData, setCheckoutData] = useState({ email: '', cpf: '', phone: '' });
+  const [checkoutData, setCheckoutData] = useState({ fullName: '', email: '', cpf: '', phone: '' });
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [copyStatus, setCopyStatus] = useState(false);
-
-  // Detecta a URL real. Se for ambiente de desenvolvimento do Google, avisa o usuário.
-  const currentUrl = useMemo(() => {
-    const origin = window.location.origin;
-    if (origin.includes('usercontent.goog') || origin.includes('localhost')) {
-      return "LINK_PENDENTE_DEPLOY"; 
-    }
-    return origin;
-  }, []);
 
   const freeDiseases = useMemo(() => {
     return DISEASES.filter(d => !d.isPremium).slice(0, 100);
@@ -47,13 +38,6 @@ const App: React.FC = () => {
     );
   }, [searchTerm, view, freeDiseases, specialDiseases]);
 
-  const filteredHomeDict = useMemo(() => {
-    return freeDiseases.filter(d => 
-      d.name.toLowerCase().includes(homeDictSearch.toLowerCase()) ||
-      d.emotionalBlock?.toLowerCase().includes(homeDictSearch.toLowerCase())
-    );
-  }, [homeDictSearch, freeDiseases]);
-
   const openDisease = (disease: Disease) => {
     setSelectedDisease(disease);
     setView('DISEASE_DETAIL');
@@ -70,41 +54,20 @@ const App: React.FC = () => {
     window.scrollTo(0, 0);
   };
 
-  const handleCopyLink = () => {
-    if (currentUrl === "LINK_PENDENTE_DEPLOY") {
-      alert("⚠️ Você está em modo de edição. O link oficial será gerado após você seguir o passo a passo da Vercel.");
-      return;
-    }
-    navigator.clipboard.writeText(currentUrl);
-    setCopyStatus(true);
-    setTimeout(() => setCopyStatus(false), 2000);
-  };
-
-  const handleShare = (platform: 'WA' | 'TG' | 'GENERIC') => {
-    if (currentUrl === "LINK_PENDENTE_DEPLOY") {
-      alert("⚠️ Siga o passo a passo para hospedar o site antes de compartilhar.");
-      return;
-    }
-    const text = "Acesse o Cura Vital Pró: Guia Master de Saúde Integrativa.";
-    const url = currentUrl;
-    
-    if (platform === 'WA') {
-      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text + " " + url)}`, '_blank');
-    } else if (platform === 'TG') {
-      window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`, '_blank');
-    }
-  };
-
   const handleCheckout = () => {
+    if (!checkoutData.fullName || !checkoutData.email) {
+      alert("Por favor, preencha seu nome completo e e-mail.");
+      return;
+    }
     if (!agreedToTerms) {
-      alert("Você precisa concordar com os termos de uso para prosseguir.");
+      alert("Você deve ler e aceitar os termos de responsabilidade médica.");
       return;
     }
     setIsProcessing(true);
     setTimeout(() => {
       setIsPremium(true);
       setIsProcessing(false);
-      navigateTo('HOME');
+      setShowSuccessScreen(true);
     }, 2000);
   };
 
@@ -139,51 +102,12 @@ const App: React.FC = () => {
                    <p className="text-slate-400 text-sm font-medium mb-8 max-w-[240px]">Ciência biológica para cura consciente.</p>
                    <div className="flex gap-3">
                      <button onClick={() => navigateTo('CATALOG')} className="bg-white text-slate-900 px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl">Catálogo</button>
-                     <button onClick={() => navigateTo('PREMIUM')} className="bg-amber-500 text-white px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl flex items-center gap-2">
-                         <Crown className="w-4 h-4" /> Plano Pró
+                     <button onClick={() => navigateTo('SPECIAL_PATHOLOGIES')} className="bg-amber-500 text-white px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl flex items-center gap-2">
+                         <Crown className="w-4 h-4" /> Arquivo Pró
                      </button>
                    </div>
                 </div>
                 <Brain className="absolute -right-12 -bottom-12 w-64 h-64 opacity-5 rotate-12" />
-             </div>
-
-             {/* Link & Compartilhamento Centralizado */}
-             <div className="bg-white p-8 rounded-[3rem] border-2 border-indigo-50 shadow-sm space-y-6">
-                <div className="flex items-center justify-between">
-                   <div className="flex items-center gap-3">
-                      <div className="bg-indigo-50 p-2.5 rounded-xl"><LinkIcon className="w-5 h-5 text-indigo-600" /></div>
-                      <h3 className="font-black text-xs uppercase tracking-widest text-slate-800">Seu Link Permanente</h3>
-                   </div>
-                   <button onClick={handleCopyLink} className="text-indigo-600 flex items-center gap-1.5 font-black text-[10px] uppercase">
-                      {copyStatus ? <CheckCircle2 className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                      {copyStatus ? 'Copiado!' : 'Copiar'}
-                   </button>
-                </div>
-
-                <div className="p-5 bg-slate-900 rounded-2xl border border-slate-800 flex items-center gap-3 overflow-hidden">
-                   <code className="text-[11px] font-black text-indigo-400 truncate tracking-tight">
-                     {currentUrl === "LINK_PENDENTE_DEPLOY" ? "Aguardando Hospedagem Vercel..." : currentUrl}
-                   </code>
-                </div>
-
-                <div className="bg-amber-50 p-5 rounded-2xl border border-amber-100">
-                   <div className="flex items-center gap-2 mb-2">
-                      <AlertCircle className="w-4 h-4 text-amber-600" />
-                      <span className="text-[9px] font-black text-amber-800 uppercase">Atenção Leigo:</span>
-                   </div>
-                   <p className="text-[10px] text-amber-900 leading-relaxed font-medium">
-                      O link que você está vendo no navegador <strong>NÃO</strong> deve ser colado na Vercel. Você deve <strong>baixar os arquivos</strong> e arrastá-los para dentro do site da Vercel.
-                   </p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                   <button onClick={() => handleShare('WA')} className="flex items-center justify-center gap-3 py-4 bg-[#25D366] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest active:scale-95 transition-transform">
-                      <MessageCircle className="w-4 h-4" /> WhatsApp
-                   </button>
-                   <button onClick={() => handleShare('TG')} className="flex items-center justify-center gap-3 py-4 bg-[#0088CC] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest active:scale-95 transition-transform">
-                      <ExternalLink className="w-4 h-4" /> Telegram
-                   </button>
-                </div>
              </div>
              
              <div className="grid grid-cols-2 gap-4">
@@ -207,19 +131,17 @@ const App: React.FC = () => {
 
         {view === 'TOOLS' && <TherapyTools initialInput={aiContext} />}
 
-        {(view === 'CATALOG' || view === 'SPECIAL_PATHOLOGIES') && (
+        {view === 'CATALOG' && (
           <div className="space-y-6 animate-fade-in">
             <div className="flex items-center justify-between">
-               <h2 className="text-3xl font-black text-slate-900 tracking-tight">
-                 {view === 'CATALOG' ? 'Catálogo 1-100' : 'Especiais Pró'}
-               </h2>
+               <h2 className="text-3xl font-black text-slate-900 tracking-tight uppercase">Catálogo 100 A-Z</h2>
                <button onClick={() => navigateTo('HOME')} className="text-[10px] font-black text-slate-400 uppercase hover:text-indigo-600">Voltar</button>
             </div>
             <div className="relative group">
-              <Search className="absolute left-5 top-5 w-5 h-5 text-slate-400" />
+              <Search className="absolute left-5 top-5 w-5 h-5 text-slate-300" />
               <input 
                 type="text" 
-                placeholder="Pesquisar termo..."
+                placeholder="Pesquisar no catálogo gratuito..."
                 className="w-full pl-14 pr-6 py-5 bg-white border border-slate-100 rounded-[2rem] shadow-sm focus:outline-none font-bold text-lg"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -229,14 +151,23 @@ const App: React.FC = () => {
               {filteredCatalog.map((disease, index) => (
                 <button key={disease.id} onClick={() => openDisease(disease)} className="bg-white p-6 rounded-[2.2rem] border border-slate-50 flex items-center justify-between shadow-sm active:scale-95">
                   <div className="flex items-center gap-4 text-left">
-                    {view === 'CATALOG' && <div className="bg-slate-900 text-white w-8 h-8 rounded-xl flex items-center justify-center font-black text-[10px]">{index + 1}</div>}
-                    <h4 className="font-black text-slate-800">{disease.name}</h4>
+                    <div className="bg-slate-900 text-white w-8 h-8 rounded-xl flex items-center justify-center font-black text-[10px]">{index + 1}</div>
+                    <h4 className="font-black text-slate-800 uppercase text-xs tracking-tight">{disease.name}</h4>
                   </div>
                   <ChevronRight className="w-5 h-5 text-slate-300" />
                 </button>
               ))}
             </div>
           </div>
+        )}
+
+        {view === 'SPECIAL_PATHOLOGIES' && (
+          <ConstellationResearch 
+            isPremium={isPremium} 
+            onUpgrade={() => navigateTo('PREMIUM')} 
+            onAskAI={askAI}
+            onOpenDisease={openDisease}
+          />
         )}
 
         {view === 'BIOMAG_INDEX' && (
@@ -246,7 +177,7 @@ const App: React.FC = () => {
         {view === 'DISEASE_DETAIL' && selectedDisease && (
           <DiseaseDetail 
             disease={selectedDisease} 
-            onBack={() => setView('HOME')} 
+            onBack={() => setView(selectedDisease.isPremium ? 'SPECIAL_PATHOLOGIES' : 'CATALOG')} 
             onAskAI={askAI}
             onExploreTherapies={(name) => {
               setAiContext(name);
@@ -263,13 +194,31 @@ const App: React.FC = () => {
 
         {view === 'PREMIUM' && (
           <div className="space-y-6 animate-fade-in text-center py-4">
-             {isPremium ? (
+             {showSuccessScreen ? (
+               <div className="bg-white border border-slate-100 p-12 rounded-[3rem] shadow-xl animate-fade-in">
+                  <div className="w-24 h-24 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <PartyPopper className="w-12 h-12 text-teal-600" />
+                  </div>
+                  <h2 className="text-3xl font-black text-slate-900 uppercase tracking-tighter mb-4">Bem-vindo, {checkoutData.fullName.split(' ')[0]}!</h2>
+                  <div className="bg-slate-50 p-8 rounded-[2rem] mb-8 border border-slate-100">
+                    <p className="text-lg font-black text-slate-800 leading-tight italic">
+                      "Seja muito bem-vindo à nova era da sua prática terapêutica. Que os caminhos de consciência aqui revelados tragam cura profunda e sucesso extraordinário em sua jornada!"
+                    </p>
+                  </div>
+                  <button 
+                    onClick={() => { setShowSuccessScreen(false); navigateTo('HOME'); }} 
+                    className="w-full bg-slate-900 text-white py-6 rounded-3xl font-black uppercase text-xs tracking-widest shadow-lg active:scale-95 transition-all"
+                  >
+                    Começar Exploração Master
+                  </button>
+               </div>
+             ) : isPremium ? (
                <div className="bg-white border border-slate-100 p-12 rounded-[3rem] shadow-xl">
                   <div className="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-6">
                     <CheckCircle2 className="w-10 h-10 text-indigo-600" />
                   </div>
                   <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tighter mb-2">Licença Master Ativa</h2>
-                  <p className="text-slate-500 font-medium mb-8">Acesso vitalício liberado.</p>
+                  <p className="text-slate-500 font-medium mb-8">Acesso vitalício liberado para {checkoutData.fullName || 'Usuário'}.</p>
                   <button onClick={() => navigateTo('HOME')} className="bg-slate-900 text-white px-10 py-4 rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg">Ir para o Dashboard</button>
                </div>
              ) : (
@@ -277,13 +226,19 @@ const App: React.FC = () => {
                  <div className="bg-slate-900 rounded-[3rem] p-12 text-white shadow-2xl relative overflow-hidden border border-white/10">
                     <Crown className="w-16 h-16 text-amber-400 mx-auto mb-6" />
                     <h2 className="text-4xl font-black mb-2 tracking-tighter uppercase">Licença Master</h2>
-                    <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-8">Desbloqueio Total</p>
-                    
+                    <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-8">Acesso Especial, Biomagnetismo & IA Expert</p>
                     <div className="space-y-4 text-left">
                        <input 
+                         type="text" 
+                         placeholder="Nome Completo"
+                         className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-sm font-bold focus:bg-white/10 outline-none text-white placeholder:text-slate-500"
+                         value={checkoutData.fullName}
+                         onChange={e => setCheckoutData({...checkoutData, fullName: e.target.value})}
+                       />
+                       <input 
                          type="email" 
-                         placeholder="E-mail de Acesso"
-                         className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-sm font-bold focus:bg-white/10 outline-none"
+                         placeholder="E-mail"
+                         className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-sm font-bold focus:bg-white/10 outline-none text-white placeholder:text-slate-500"
                          value={checkoutData.email}
                          onChange={e => setCheckoutData({...checkoutData, email: e.target.value})}
                        />
@@ -291,14 +246,14 @@ const App: React.FC = () => {
                           <input 
                             type="text" 
                             placeholder="CPF"
-                            className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-sm font-bold focus:bg-white/10 outline-none"
+                            className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-sm font-bold focus:bg-white/10 outline-none text-white placeholder:text-slate-500"
                             value={checkoutData.cpf}
                             onChange={e => setCheckoutData({...checkoutData, cpf: e.target.value})}
                           />
                           <input 
                             type="tel" 
                             placeholder="Telefone"
-                            className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-sm font-bold focus:bg-white/10 outline-none"
+                            className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-sm font-bold focus:bg-white/10 outline-none text-white placeholder:text-slate-500"
                             value={checkoutData.phone}
                             onChange={e => setCheckoutData({...checkoutData, phone: e.target.value})}
                           />
@@ -307,6 +262,26 @@ const App: React.FC = () => {
                  </div>
 
                  <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6">
+                    <div className="bg-amber-50 p-6 rounded-3xl border border-amber-100 text-left">
+                       <div className="flex items-center gap-2 mb-3">
+                          <AlertTriangle className="w-5 h-5 text-amber-600" />
+                          <h4 className="font-black text-[10px] uppercase tracking-widest text-amber-800">Responsabilidade Médica & Uso</h4>
+                       </div>
+                       <div className="space-y-3 text-[10px] text-amber-900 font-medium leading-relaxed">
+                          <p>• O Cura Vital Pró é uma <strong>ferramenta informativa e educacional</strong> auxiliar.</p>
+                          <p>• <strong>NÃO SUBSTITUI</strong> diagnósticos ou tratamentos convencionais.</p>
+                       </div>
+                    </div>
+
+                    <div className="flex items-start gap-4 text-left group cursor-pointer" onClick={() => setAgreedToTerms(!agreedToTerms)}>
+                       <div className={`w-7 h-7 rounded-xl border-2 flex items-center justify-center transition-all flex-shrink-0 mt-1 ${agreedToTerms ? 'bg-indigo-600 border-indigo-600' : 'border-slate-200'}`}>
+                          {agreedToTerms && <CheckCircle2 className="w-5 h-5 text-white" />}
+                       </div>
+                       <p className="text-[11px] text-slate-600 font-bold leading-tight">
+                          Confirmo que li os termos e assumo total responsabilidade.
+                       </p>
+                    </div>
+
                     <div className="grid grid-cols-3 gap-3">
                        <button onClick={() => setPaymentMethod('CARD')} className={`p-4 rounded-2xl border transition-all ${paymentMethod === 'CARD' ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-slate-50 border-slate-100 text-slate-400'}`}>
                           <CreditCard className="w-5 h-5 mx-auto mb-1" />
@@ -322,15 +297,6 @@ const App: React.FC = () => {
                        </button>
                     </div>
 
-                    <div className="flex items-start gap-3 text-left group cursor-pointer" onClick={() => setAgreedToTerms(!agreedToTerms)}>
-                       <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all flex-shrink-0 ${agreedToTerms ? 'bg-indigo-600 border-indigo-600' : 'border-slate-200'}`}>
-                          {agreedToTerms && <CheckCircle2 className="w-4 h-4 text-white" />}
-                       </div>
-                       <p className="text-[10px] text-slate-500 font-bold leading-tight">
-                          Aceito os termos de responsabilidade.
-                       </p>
-                    </div>
-
                     <button 
                       onClick={handleCheckout}
                       disabled={isProcessing || !agreedToTerms}
@@ -338,7 +304,7 @@ const App: React.FC = () => {
                         !agreedToTerms ? 'bg-slate-100 text-slate-300 cursor-not-allowed' : 'bg-indigo-600 text-white active:scale-95'
                       }`}
                     >
-                      {isProcessing ? 'Processando...' : 'Finalizar - R$ 0,10'}
+                      {isProcessing ? 'Processando...' : 'Ativar Licença Master - R$ 9,90'}
                     </button>
                  </div>
                </div>
