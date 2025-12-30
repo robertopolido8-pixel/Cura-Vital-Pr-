@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Loader2, ArrowLeft, Search, Book, Crown, Magnet, Brain, ChevronRight } from 'lucide-react';
+import { Send, Loader2, ArrowLeft, Search, Book, Crown, Magnet, Brain, ChevronRight, Mic, MicOff, Lock } from 'lucide-react';
 import { Message, ViewState, Disease } from '../types';
 import { getTherapeuticInsight } from '../services/geminiService';
 import { DISEASES } from '../constants';
@@ -18,7 +18,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ initialQuery, onNavigate, isP
     {
       id: 'welcome',
       role: 'model',
-      text: 'Saudações. Sou o **Vitalino**, seu mentor de consciência sistêmica.\n\nEstou aqui para guiar sua jornada pelas camadas mais profundas da vida. Use o **Dicionário Bioemocional** abaixo para consultas rápidas ou sonde minha base de dados sobre Biomagnetismo e PNL.',
+      text: 'Saudações. Sou o **Vitalino**, seu mentor de consciência sistêmica.\n\nEstou aqui para guiar sua jornada pelas camadas mais profundas da vida. Use o **Dicionário Bioemocional** abaixo para consultas rápidas ou sonde minha base de dados sobre Biomagnetismo e PNL. Você também pode usar comandos de voz como "abrir manuais" ou "ir para comandos de voz".',
       timestamp: new Date()
     }
   ]);
@@ -27,7 +27,61 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ initialQuery, onNavigate, isP
   const [isDictOpen, setIsDictOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDisease, setSelectedDisease] = useState<Disease | null>(null);
+  const [isListening, setIsListening] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const recognitionRef = useRef<any>(null);
+
+  useEffect(() => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.lang = 'pt-BR';
+      recognitionRef.current.continuous = false;
+      recognitionRef.current.interimResults = false;
+
+      recognitionRef.current.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript.toLowerCase();
+        console.log('Voz reconhecida:', transcript);
+        handleVoiceCommand(transcript);
+        setIsListening(false);
+      };
+
+      recognitionRef.current.onerror = () => {
+        setIsListening(false);
+      };
+
+      recognitionRef.current.onend = () => {
+        setIsListening(false);
+      };
+    }
+  }, []);
+
+  const handleVoiceCommand = (command: string) => {
+    if (command.includes('abrir manuais') || command.includes('ir para manuais')) {
+      onNavigate('TOOLS');
+    } else if (command.includes('ir para pnl') || command.includes('abrir pnl')) {
+      onNavigate('TOOLS');
+    } else if (command.includes('ir para comandos de voz') || command.includes('abrir comandos de voz')) {
+      onNavigate('TOOLS');
+    } else if (command.includes('abrir dicionário') || command.includes('dicionário bioemocional')) {
+      setIsDictOpen(true);
+    } else if (command.includes('fechar dicionário')) {
+      setIsDictOpen(false);
+    } else {
+      // Se não for um comando de navegação, envia como mensagem
+      handleSend(command);
+    }
+  };
+
+  const toggleListening = () => {
+    if (isListening) {
+      recognitionRef.current?.stop();
+    } else {
+      recognitionRef.current?.start();
+      setIsListening(true);
+    }
+  };
 
   useEffect(() => {
     if (initialQuery) handleSend(initialQuery);
@@ -74,15 +128,29 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ initialQuery, onNavigate, isP
             <p className="text-[10px] text-indigo-400 uppercase tracking-[0.2em] font-black mt-1">Consciência Pró</p>
           </div>
         </div>
-        <button 
-          onClick={() => setIsDictOpen(!isDictOpen)}
-          className={`flex items-center space-x-2 px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${
-            isDictOpen ? 'bg-indigo-600 text-white shadow-lg' : 'bg-white/10 text-white hover:bg-white/20'
-          }`}
-        >
-          <Book className="w-3.5 h-3.5" />
-          <span>{isDictOpen ? 'Fechar' : 'Dicionário'}</span>
-        </button>
+        
+        <div className="flex items-center space-x-2">
+          {/* Novo Ícone Dicionário Pró */}
+          <button 
+            onClick={() => isPremium ? setIsDictOpen(true) : onNavigate('PREMIUM')}
+            className={`p-2.5 rounded-2xl transition-all ${
+              isPremium ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-800 text-slate-500 border border-slate-700'
+            }`}
+            title="Dicionário Bioemocional Pró"
+          >
+            {isPremium ? <Crown className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
+          </button>
+
+          <button 
+            onClick={() => setIsDictOpen(!isDictOpen)}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${
+              isDictOpen ? 'bg-indigo-600 text-white shadow-lg' : 'bg-white/10 text-white hover:bg-white/20'
+            }`}
+          >
+            <Book className="w-3.5 h-3.5" />
+            <span>{isDictOpen ? 'Fechar' : 'Dicionário'}</span>
+          </button>
+        </div>
       </div>
 
       {isDictOpen && (
@@ -202,12 +270,20 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ initialQuery, onNavigate, isP
       {!isDictOpen && (
         <div className="p-6 bg-white border-t border-slate-100">
           <div className="flex items-center space-x-3">
+            <button
+              onClick={toggleListening}
+              className={`p-4 rounded-2xl transition-all shadow-lg active:scale-90 ${
+                isListening ? 'bg-red-500 text-white animate-pulse' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
+              }`}
+            >
+              {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+            </button>
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend(input)}
-              placeholder="Fale com o Vitalino..."
+              placeholder={isListening ? "Ouvindo..." : "Fale com o Vitalino..."}
               className="flex-1 p-4 bg-slate-50 border border-slate-100 rounded-[1.5rem] focus:outline-none focus:bg-white text-sm font-bold italic"
               disabled={isLoading}
             />
