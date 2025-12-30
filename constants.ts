@@ -173,7 +173,7 @@ const SBS_MASTER_RAW_DATA = [
   { n: "Glaucoma", c: "Medo frontal intenso (pressão ocular elevada).", l: EmbryonicLayer.ECTODERM },
   { n: "Gota", c: "Autodesvalorização profunda + Retenção de líquidos (Rins).", l: EmbryonicLayer.NEW_MESODERM },
   { n: "Gripe", c: "Cura de conflitos territoriais (Nariz/Garganta/Brônquios).", l: EmbryonicLayer.ECTODERM },
-  { n: "Halitose", c: "Pedaço sujo na boca em decomposição por fungos.", l: EmbryonicLayer.ENDODERM },
+  { n: "Halitose", c: "Pedaço sujo na boca in decomposição por fungos.", l: EmbryonicLayer.ENDODERM },
   { n: "Hemorroidas", c: "Cura de conflito de identidade territorial (Reto).", l: EmbryonicLayer.ECTODERM },
   { n: "Hepatite", c: "Cura de raiva territorial nos ductos biliares.", l: EmbryonicLayer.ECTODERM },
   { n: "Hérnia de Disco", c: "Desvalorização central extrema do suporte vital (Coluna).", l: EmbryonicLayer.NEW_MESODERM },
@@ -255,10 +255,135 @@ export const SPECIAL_DISEASES: Disease[] = SBS_MASTER_RAW_DATA.map((item, idx) =
 export const DISEASES: Disease[] = [...generateAlphabeticalFreeList(), ...SPECIAL_DISEASES];
 
 export const HAMER_BERT_CONSTELLATIONS: Constellation[] = [
-  { id: 'c-001', name: 'Constelação do Tronco Cerebral', brainRelays: 'Relés da Ponte', behavior: 'Desorientação total, confusão mental grave.', conflicts: ['Pedaço bilateral'], systemicRoot: 'Vincular ao caos sistêmico.', professionalInsight: 'Paciente fora da realidade.' },
-  { id: 'c-002', name: 'Constelação de Túbulos Coletores (TCR)', brainRelays: 'Relés Renais', behavior: 'Desorientação geográfica, hoarding, medo de abandono.', conflicts: ['Abandono bilateral'], systemicRoot: 'Ancestrais refugiados e expulsos.', professionalInsight: 'Causa a Síndrome de Retenção de Líquidos.' },
-  { id: 'c-017', name: 'Constelação Autista', brainRelays: 'Lóbulos Temporais', behavior: 'Isolamento, rituais, dificuldade de comunicação.', conflicts: ['Medo frontal e territorial'], systemicRoot: 'Criança protegendo segredos graves.', professionalInsight: 'Um refúgio biológico contra invasão.' },
-  { id: 'c-009', name: 'Constelação Lóbulo Temporal', brainRelays: 'Córtex Temporal', behavior: 'Bipolaridade, alternância depressão/mania.', conflicts: ['Território em oposição'], systemicRoot: 'Dinamismo sexual do clã familiar.', professionalInsight: 'Equilíbrio depende da balança de carga.' }
+  // --- CONSTELAÇÕES ESQUIZOFRÊNICAS (CÓRTEX CEREBRAL) ---
+  { 
+    id: 'c-001', 
+    name: 'Constelação de Medo Frontal', 
+    brainRelays: 'Córtex Pré-frontal', 
+    behavior: 'Ansiedade constante, estado de alerta paralisante, sensação de impotência absoluta.', 
+    conflicts: ['Medo frontal bilateral'], 
+    systemicRoot: 'Vínculos de medo herdados de situações de guerra ou perseguição.', 
+    professionalInsight: 'Paciente sente-se encurralado por um perigo que vem de frente.' 
+  },
+  { 
+    id: 'c-002', 
+    name: 'Constelação de Medo Visual (Occipital)', 
+    brainRelays: 'Córtex Occipital / Visual', 
+    behavior: 'Paranóia de ser perseguido, sentir que há algo nas costas, delírios visuais.', 
+    conflicts: ['Medo por trás / Medo visual'], 
+    systemicRoot: 'Segredos familiares que "olham por trás das costas".', 
+    professionalInsight: 'Frequente em traumas de abuso onde o agressor se aproxima sorrateiramente.' 
+  },
+  { 
+    id: 'c-003', 
+    name: 'Constelação Motora', 
+    brainRelays: 'Córtex Motor', 
+    behavior: 'Tiques involuntários, inquietação motora extrema (pernas inquietas), compulsão por movimento.', 
+    conflicts: ['Não poder fugir ou não poder segurar'], 
+    systemicRoot: 'Impedimentos ancestrais de movimento ou fuga.', 
+    professionalInsight: 'O corpo está tentando realizar uma ação motora que foi bloqueada no momento do choque.' 
+  },
+  { 
+    id: 'c-004', 
+    name: 'Constelação Sensorial', 
+    brainRelays: 'Córtex Sensorial', 
+    behavior: 'Alucinações táteis, sensação de estar sendo tocado, isolamento social profundo.', 
+    conflicts: ['Conflito de separação brutal'], 
+    systemicRoot: 'Perdas abruptas de contato físico no clã.', 
+    professionalInsight: 'Perda total do sentido de proximidade social.' 
+  },
+  { 
+    id: 'c-005', 
+    name: 'Constelação Pós-Sensorial', 
+    brainRelays: 'Córtex Pós-Sensorial', 
+    behavior: 'Perda severa de memória de curto prazo, confusão mental ("Brain Fog"), desorientação.', 
+    conflicts: ['Conflito de separação dolorosa ou indesejada'], 
+    systemicRoot: 'Necessidade biológica de esquecer um trauma de contato.', 
+    professionalInsight: 'O cérebro apaga os dados recentes para proteger a psique do sofrimento presente.' 
+  },
+  { 
+    id: 'c-006', 
+    name: 'Constelação de Agressividade', 
+    brainRelays: 'Lóbulos Temporais', 
+    behavior: 'Comportamento sádico, agressividade verbal ou física incontrolável, destrutividade.', 
+    conflicts: ['Raiva territorial + Identidade/Oposição'], 
+    systemicRoot: 'Lealdade a perpetradores violentos no sistema.', 
+    professionalInsight: 'O indivíduo torna-se o agressor para não ser a vítima novamente.' 
+  },
+  { 
+    id: 'c-007', 
+    name: 'Constelação de Voo (Flying)', 
+    brainRelays: 'Lóbulos Temporais', 
+    behavior: 'Sensação de levitação, estar fora da realidade, sonhos lúcidos constantes, misticismo extremo.', 
+    conflicts: ['Medo territorial + Susto territorial'], 
+    systemicRoot: 'Ancestrais que precisaram "voar" ou desaparecer para sobreviver.', 
+    professionalInsight: 'Um refúgio psicodélico biológico para escapar de uma realidade insuportável.' 
+  },
+  { 
+    id: 'c-008', 
+    name: 'Constelação Thalamica (Além)', 
+    brainRelays: 'Tálamo', 
+    behavior: 'Sentir-se em outra dimensão, comunicação com mortos, perda do sentido de tempo/espaço.', 
+    conflicts: ['Choque biológico existencial total'], 
+    systemicRoot: 'Excluídos que morreram em condições trágicas.', 
+    professionalInsight: 'A pessoa vive com "um pé no além" para manter vivos os excluídos.' 
+  },
+  { 
+    id: 'c-009', 
+    name: 'Constelação de Paranóia Territorial', 
+    brainRelays: 'Córtex Temporal', 
+    behavior: 'Delírios de que o território (casa, trabalho) está sendo invadido por inimigos invisíveis.', 
+    conflicts: ['Medo territorial + Identidade'], 
+    systemicRoot: 'Invasões históricas de terras e lares na árvore genealógica.', 
+    professionalInsight: 'Mecanismo de defesa para detecção hiper-sensível de invasores.' 
+  },
+  { 
+    id: 'c-010', 
+    name: 'Constelação de Pensamento Mítico', 
+    brainRelays: 'Lóbulos Temporais / Tálamo', 
+    behavior: 'Identificação com deuses, figuras históricas ou heróis mitológicos. Grandiosidade espiritual.', 
+    conflicts: ['Múltiplos conflitos de território e desvalorização'], 
+    systemicRoot: 'Compensação biológica por uma desvalorização ancestral humilhante.', 
+    professionalInsight: 'Para sobreviver à insignificância, o cérebro cria uma persona divina.' 
+  },
+  { 
+    id: 'c-011', 
+    name: 'Constelação de Casanova / Ninfomaníaca', 
+    brainRelays: 'Córtex Temporal / Relés Sexuais', 
+    behavior: 'Hiper-sexualidade, necessidade compulsiva de conquista, múltiplos parceiros sem vínculo.', 
+    conflicts: ['Frustração sexual + Perda territorial'], 
+    systemicRoot: 'Repressão sexual severa em gerações anteriores.', 
+    professionalInsight: 'Tentativa biológica desesperada de garantir a procriação do clã.' 
+  },
+
+  // --- CONSTELAÇÕES DO TRONCO E CEREBELO ---
+  { 
+    id: 'c-101', 
+    name: 'Constelação do Tronco Cerebral', 
+    brainRelays: 'Relés da Ponte / Medula', 
+    behavior: 'Estado de estupor, desorientação total, confusão entre o que é real e imaginário.', 
+    conflicts: ['Pedaço vital bilateral'], 
+    systemicRoot: 'Caos sistêmico onde a sobrevivência básica foi ameaçada.', 
+    professionalInsight: 'O paciente está operando apenas em nível de reflexos primários.' 
+  },
+  { 
+    id: 'c-102', 
+    name: 'Constelação de Túbulos Coletores (TCR)', 
+    brainRelays: 'Relés Renais', 
+    behavior: 'Desorientação geográfica ("perder o rumo"), acumulação de objetos (hoarding), isolamento.', 
+    conflicts: ['Abandono + Refugiado/Existencial'], 
+    systemicRoot: 'Ancestrais que foram expulsos de suas terras.', 
+    professionalInsight: 'Responsável pela retenção severa de líquidos (A Síndrome).' 
+  },
+  { 
+    id: 'c-103', 
+    name: 'Constelação de Cerebelo', 
+    brainRelays: 'Relés de Proteção (Cerebelo)', 
+    behavior: 'Comportamento de "couraça", rigidez emocional, sentir-se constantemente atacado.', 
+    conflicts: ['Ataque bilateral à integridade'], 
+    systemicRoot: 'Viver em ambiente de hostilidade física constante.', 
+    professionalInsight: 'O indivíduo se torna emocionalmente "blindado" para não sentir dor.' 
+  }
 ];
 
 export const NAV_ITEMS = [
