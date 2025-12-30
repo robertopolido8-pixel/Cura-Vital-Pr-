@@ -1,9 +1,12 @@
 
+
 export enum EmbryonicLayer {
   ENDODERM = "Endoderma (Sobrevivência/Pedaço)",
   OLD_MESODERM = "Mesoderma Antigo (Proteção/Ataque)",
   NEW_MESODERM = "Mesoderma Novo (Valorização/Comparação)",
-  ECTODERM = "Ectoderma (Território/Relacionamento)"
+  ECTODERM = "Ectoderma (Território/Relacionamento)",
+  // Added SYSTEMIC to resolve compilation errors in constants.ts
+  SYSTEMIC = "Sistêmico (Múltiplas Camadas)"
 }
 
 export type HealthCategory = 'Doença' | 'Síndrome' | 'Trauma' | 'Pscicoemocional' | 'Especial';
